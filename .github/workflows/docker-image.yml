@@ -53,7 +53,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           npx sonar-scanner \
-            -Dsonar.projectKey=my-project-ironrim_sonarqube \
+            -Dsonar.projectKey=my-project-ironrim \
             -Dsonar.organization=my-project-ironrim \
             -Dsonar.sources=src \
             -Dsonar.host.url=https://sonarcloud.io \
