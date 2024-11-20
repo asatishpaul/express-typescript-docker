@@ -53,11 +53,10 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           npx sonar-scanner \
-            -Dsonar.projectKey=my-project-ironrim \
-            -Dsonar.organization=my-project-ironrim_sonarqube \
-            -Dsonar.sources=src \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.organization=my-project-ironrim \
+            -Dsonar.projectKey=my-project-ironrim_sonarqube \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=https://sonarcloud.io
 
       # Upload Build Artifacts
       - name: Upload Build Artifacts
