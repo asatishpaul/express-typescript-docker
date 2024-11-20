@@ -56,7 +56,7 @@ jobs:
           npx sonar-scanner -X \
             -Dsonar.projectKey=my-project-ironrim \
             -Dsonar.organization=my-project-ironrim_sonarqube \
-            -Dsonar.sources=src \
+            -Dsonar.sources=. \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.test.inclusions=**/*.spec.ts \
             -Dsonar.coverage.exclusions=**/node_modules/**,**/*.test.ts \
