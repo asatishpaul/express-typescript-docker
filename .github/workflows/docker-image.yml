@@ -48,16 +48,16 @@ jobs:
           distribution: 'temurin'
 
       # configure SonarQube Scan if necessary
-    - name: SonarCloud Scan
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      run: |
-        npx sonar-scanner \
-          -Dsonar.projectKey=my-project-ironrim_sonarqube \
-          -Dsonar.organization=your-organization-key \
-          -Dsonar.sources=src \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+      - name: SonarCloud Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          npx sonar-scanner \
+            -Dsonar.projectKey=my-project-ironrim_sonarqube \
+            -Dsonar.organization=your-organization-key \
+            -Dsonar.sources=src \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
       # Upload Build Artifacts
       - name: Upload Build Artifacts
