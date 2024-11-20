@@ -54,7 +54,7 @@ jobs:
         run: |
           npx sonar-scanner \
             -Dsonar.projectKey=my-project-ironrim \
-            -Dsonar.organization=my-project-ironrim \
+            -Dsonar.organization=my_project_ironrim \
             -Dsonar.sources=src \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
