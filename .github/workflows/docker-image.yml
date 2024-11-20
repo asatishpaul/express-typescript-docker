@@ -53,7 +53,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          npx sonar-scanner \
+          npx sonar-scanner -X \
             -Dsonar.projectKey=my-project-ironrim \
             -Dsonar.organization=my-project-ironrim_sonarqube \
             -Dsonar.sources=src \
@@ -61,7 +61,7 @@ jobs:
             -Dsonar.test.inclusions=**/*.spec.ts \
             -Dsonar.coverage.exclusions=**/node_modules/**,**/*.test.ts \
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-        if: ${{ env.SKIP_CI != 'true' }}
+
 
       # Upload build artifacts (if needed)
       - name: Upload Build Artifacts
