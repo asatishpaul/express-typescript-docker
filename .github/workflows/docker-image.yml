@@ -48,17 +48,16 @@ jobs:
           distribution: 'temurin'
 
       # configure SonarQube Scan if necessary
-      - name: SonarQube Scan
-        env:
-          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
-        run: |
-          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
-          unzip sonar-scanner.zip
-          export PATH="$PATH:${PWD}/sonar-scanner-4.6.2.2472-linux/bin"
-          sonar-scanner -X \
-            -Dsonar.projectKey=${{ secrets.SONARQUBE_PROJECT_KEY }} \
-            -Dsonar.organization=${{ secrets.SONARQUBE_ORGANIZATION }} \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
+    - name: SonarCloud Scan
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: |
+        npx sonar-scanner \
+          -Dsonar.projectKey=my-project-ironrim_sonarqube \
+          -Dsonar.organization=your-organization-key \
+          -Dsonar.sources=src \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
       # Upload Build Artifacts
       - name: Upload Build Artifacts
