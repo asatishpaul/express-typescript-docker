@@ -1,4 +1,4 @@
-name: CI Pipeline 
+name: CI Pipeline
 
 on:
   push:
@@ -58,12 +58,12 @@ jobs:
             -Dsonar.sources=. \
             -Dsonar.host.url=https://sonarcloud.io
 
-      # Upload build artifacts with version
+      # Upload Build Artifacts
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: build-artifacts-${{ env.new_version }}
-          path: dist/
+          name: build-artifacts
+          path: dist/  # Assuming build outputs to the 'dist' folder
 
       # Set up JFrog CLI
       - name: Setup JFrog CLI
@@ -77,33 +77,18 @@ jobs:
             --interactive=false
 
 
-      # Generate a version tag
-      - name: Generate Version Tag
-        id: generate_version
+      # Docker login to JFrog Artifactory
+      - name: Docker login to JFrog Artifactory
         run: |
-          # Load the existing tag from the repository or default to v0.0.0
-          last_version=$(git tag --sort=-v:refname | head -n 1 || echo "v0.0.0")
-          # Increment the version
-          major=$(echo $last_version | cut -d'.' -f1 | tr -d 'v')
-          minor=$(echo $last_version | cut -d'.' -f2)
-          patch=$(echo $last_version | cut -d'.' -f3)
-          new_patch=$((patch + 1))
-          new_version="v$major.$minor.$new_patch"
-          echo "new_version=$new_version" >> $GITHUB_ENV
-          echo "New version generated: $new_version"
-
-      # Use the new version in steps
+          echo ${{ secrets.JFROG_API_KEY }} | docker login satishrepo.jfrog.io --username ${{ secrets.JFROG_USERNAME }} --password-stdin
+      
+      # Build Docker image
       - name: Build Docker Image
-        run: |
-          docker build . --file Dockerfile --tag satishrepo.jfrog.io/my-repo-docker/express-typescript-docker:${{ env.new_version }}
-        env:
-          new_version: ${{ env.new_version }}
-
+        run: docker build . --file Dockerfile --tag satishrepo.jfrog.io/my-repo-docker/express-typescript-docker:latest
+      
+      # Push Docker image to JFrog Artifactory
       - name: Push Docker Image to JFrog Artifactory
-        run: |
-          docker push satishrepo.jfrog.io/my-repo-docker/express-typescript-docker:${{ env.new_version }}
-        env:
-          new_version: ${{ env.new_version }}
+        run: docker push satishrepo.jfrog.io/my-repo-docker/express-typescript-docker:latest
 
 
       # # Notify Slack (Optional)
