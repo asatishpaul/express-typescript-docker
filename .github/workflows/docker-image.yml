@@ -92,6 +92,12 @@ jobs:
           echo "new_version=$new_version" >> $GITHUB_ENV
           echo "New version generated: $new_version"
 
+      # Login to JFrog Docker Registry
+      - name: Login to JFrog Docker Registry
+        run: |
+          echo "${{ secrets.JFROG_PASSWORD }}" | docker login satishrepo.jfrog.io -u "${{ secrets.JFROG_USERNAME }}" --password-stdin
+
+  
       # Use the new version in steps
       - name: Build Docker Image
         run: |
