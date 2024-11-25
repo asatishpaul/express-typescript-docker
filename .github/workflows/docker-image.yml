@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -7,16 +7,15 @@ on:
   pull_request:
     branches:
       - '**'
-
+ 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Check out the repository
       - uses: actions/checkout@v2
 
-      # Skip CI if [skip ci] is in the commit message
+      # Skipping CI
       - name: Check for [skip ci]
         id: skip_check
         run: git log -1 --pretty=%s | grep -iqE '\[skip ci\]|\[ci skip\]'
@@ -26,53 +25,48 @@ jobs:
         run: echo "SKIP_CI=true" >> $GITHUB_ENV
         if: ${{ steps.skip_check.outcome == 'success' }}
 
-      # Install dependencies using Yarn
+      # Install dependencies (Yarn)
       - name: Install dependencies
         run: yarn install
         if: ${{ env.SKIP_CI != 'true' }}
 
-      # Run lint and test
+      # Lint and Test
       - name: Lint and Test
         run: yarn lint && yarn test
         if: ${{ env.SKIP_CI != 'true' }}
 
-      # Build the project
+      # Build Project
       - name: Build Project
         run: yarn build
         if: ${{ env.SKIP_CI != 'true' }}
 
-      # Set up Java 17 for SonarCloud
+      # Setup Java 17 (if required for the environment)
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # Run SonarCloud analysis
-      - name: Run SonarCloud Scan
+      # configure SonarQube Scan if necessary
+      - name: SonarCloud Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          npx sonar-scanner -X \
-            -Dsonar.projectKey=my-project-ironrim \
-            -Dsonar.organization=my-project-ironrim_sonarqube \
+          npx sonar-scanner \
+            -Dsonar.organization=my-project-ironrim \
+            -Dsonar.projectKey=my-project-ironrim_sonarqube \
             -Dsonar.sources=. \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.test.inclusions=**/*.spec.ts \
-            -Dsonar.coverage.exclusions=**/node_modules/**,**/*.test.ts \
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.host.url=https://sonarcloud.io
 
-
-      # Upload build artifacts (if needed)
+      # Upload Build Artifacts
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
-          path: dist/  # Assuming the build outputs are in the 'dist' folder
-        if: ${{ env.SKIP_CI != 'true' }}
+          path: dist/  # Assuming build outputs to the 'dist' folder
 
-      # Set up JFrog CLI for deployment
-      - name: Set up JFrog CLI
+      # Set up JFrog CLI
+      - name: Setup JFrog CLI
         run: |
           curl -fL https://getcli.jfrog.io | sh
           ./jfrog config add jfrog-server \
@@ -81,26 +75,23 @@ jobs:
             --password ${{ secrets.JFROG_PASSWORD }} \
             --enc-password=false \
             --interactive=false
-        if: ${{ env.SKIP_CI != 'true' }}
+
 
       # Docker login to JFrog Artifactory
       - name: Docker login to JFrog Artifactory
         run: |
           echo ${{ secrets.JFROG_API_KEY }} | docker login satishrepo.jfrog.io --username ${{ secrets.JFROG_USERNAME }} --password-stdin
-        if: ${{ env.SKIP_CI != 'true' }}
-
+      
       # Build Docker image
       - name: Build Docker Image
         run: docker build . --file Dockerfile --tag satishrepo.jfrog.io/my-repo-docker/express-typescript-docker:latest
-        if: ${{ env.SKIP_CI != 'true' }}
-
+      
       # Push Docker image to JFrog Artifactory
       - name: Push Docker Image to JFrog Artifactory
         run: docker push satishrepo.jfrog.io/my-repo-docker/express-typescript-docker:latest
-        if: ${{ env.SKIP_CI != 'true' }}
 
-      # Notify Slack (Optional)
-      # Uncomment this section if Slack notifications are needed
+
+      # # Notify Slack (Optional)
       # - name: Notify Slack
       #   uses: rtCamp/action-slack-notify@v2
       #   with:
