@@ -76,6 +76,8 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '17'
+          distribution: 'adoptopenjdk'  # You can use other distributions like 'zulu', 'amazon-corretto', etc.
+
 
       # SonarCloud Scan
       - name: SonarCloud Scan
