@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - '**'
- 
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -71,7 +71,14 @@ jobs:
         env:
           new_version: ${{ env.new_version }}
 
-      # configure SonarQube Scan if necessary
+      # Install Java 17 for SonarQube Scanner Compatibility
+      - name: Install OpenJDK 17
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-17-jdk
+          java -version
+
+      # SonarCloud Scan
       - name: SonarCloud Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -105,4 +112,3 @@ jobs:
       - name: Deploy to EKS
         run: |
           kubectl apply -f deployment.yaml
-
