@@ -119,10 +119,9 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-
       # Set up kubectl for EKS
-      - name: Set up kubectl
-        uses: aws-actions/eks-kubeconfig@v2
+      - name: Set up kubectl for EKS
+        uses: aws-actions/eks-kubeconfig-action@v2
         with:
           aws-region: ${{ secrets.AWS_REGION }}
           cluster-name: ${{ secrets.CLUSTER_NAME }}
