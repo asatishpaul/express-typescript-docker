@@ -1,21 +1,24 @@
-name: CI Pipeline
+name: CI/CD Pipeline to EKS
 
 on:
   push:
     branches:
-      - '**'
-  pull_request:
-    branches:
-      - '**'
- 
+      - main
+
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v2
+    permissions:
+      id-token: write
+      contents: read
 
-      # Skipping CI
+    steps:
+      # Checkout Code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Skip CI Check
       - name: Check for [skip ci]
         id: skip_check
         run: git log -1 --pretty=%s | grep -iqE '\[skip ci\]|\[ci skip\]'
@@ -25,7 +28,7 @@ jobs:
         run: echo "SKIP_CI=true" >> $GITHUB_ENV
         if: ${{ steps.skip_check.outcome == 'success' }}
 
-      # Install dependencies (Yarn)
+      # Install Dependencies
       - name: Install dependencies
         run: yarn install
         if: ${{ env.SKIP_CI != 'true' }}
@@ -40,50 +43,11 @@ jobs:
         run: yarn build
         if: ${{ env.SKIP_CI != 'true' }}
 
-      # Setup Java 17 (if required for the environment)
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      # configure SonarQube Scan if necessary
-      - name: SonarCloud Scan
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          npx sonar-scanner \
-            -Dsonar.organization=my-project-ironrim \
-            -Dsonar.projectKey=my-project-ironrim_sonarqube \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=https://sonarcloud.io
-
-      # Upload build artifacts with version
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-artifacts-${{ env.new_version }}
-          path: dist/
-
-      # Set up JFrog CLI
-      - name: Setup JFrog CLI
-        run: |
-          curl -fL https://getcli.jfrog.io | sh
-          ./jfrog config add jfrog-server \
-            --url ${{ secrets.JFROG_URL }} \
-            --user ${{ secrets.JFROG_USERNAME }} \
-            --password ${{ secrets.JFROG_PASSWORD }} \
-            --enc-password=false \
-            --interactive=false
-
-
-      # Generate a version tag
+      # Generate Version Tag
       - name: Generate Version Tag
         id: generate_version
         run: |
-          # Load the existing tag from the repository or default to v0.0.0
           last_version=$(git tag --sort=-v:refname | head -n 1 || echo "v0.0.0")
-          # Increment the version
           major=$(echo $last_version | cut -d'.' -f1 | tr -d 'v')
           minor=$(echo $last_version | cut -d'.' -f2)
           patch=$(echo $last_version | cut -d'.' -f3)
@@ -97,20 +61,19 @@ jobs:
         run: |
           echo "${{ secrets.JFROG_PASSWORD }}" | docker login satishrepo.jfrog.io -u "${{ secrets.JFROG_USERNAME }}" --password-stdin
 
-  
-      # Use the new version in steps
+      # Build Docker Image
       - name: Build Docker Image
         run: |
           docker build . --file Dockerfile --tag satishrepo.jfrog.io/my-repo-docker/express-typescript-docker:${{ env.new_version }}
         env:
           new_version: ${{ env.new_version }}
 
+      # Push Docker Image to JFrog Artifactory
       - name: Push Docker Image to JFrog Artifactory
         run: |
           docker push satishrepo.jfrog.io/my-repo-docker/express-typescript-docker:${{ env.new_version }}
         env:
           new_version: ${{ env.new_version }}
-
 
       # Configure AWS Credentials
       - name: Configure AWS Credentials
@@ -120,28 +83,18 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       # Set up kubectl for EKS
-      - name: Set up kubectl for EKS
-        uses: aws-actions/configure-kubeconfig@v1.0.0
+      - name: Set up kubectl
+        uses: aws-actions/configure-kubeconfig@v2
         with:
           aws-region: ${{ secrets.AWS_REGION }}
           cluster-name: ${{ secrets.CLUSTER_NAME }}
 
-      # Validate kubectl configuration
-      - name: Validate kubectl configuration
+      # Update kubeconfig for EKS
+      - name: Update kubeconfig
         run: |
-          kubectl get nodes
+          aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.CLUSTER_NAME }}
 
       # Deploy to EKS using the deployment.yaml file
       - name: Deploy to EKS
         run: |
-          kubectl apply -f deployment.yaml --validate=false
-
-
-      # # Notify Slack (Optional)
-      # - name: Notify Slack
-      #   uses: rtCamp/action-slack-notify@v2
-      #   with:
-      #     webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-      #     message: "Deployment of ${{ github.sha }} to production succeeded"
-      #     color: good
-      #   if: success()
+          kubectl apply -f deployment.yaml
