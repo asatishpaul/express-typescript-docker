@@ -83,7 +83,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          npx sonar-scanner \
+          npx sonar-scanner -X \
             -Dsonar.organization=my-project-ironrim \
             -Dsonar.projectKey=my-project-ironrim_sonarqube \
             -Dsonar.sources=. \
