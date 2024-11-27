@@ -78,7 +78,10 @@ jobs:
           java-version: '17'
           distribution: 'adoptopenjdk'  # You can use other distributions like 'zulu', 'amazon-corretto', etc.
 
-
+      # Checkout Code
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
       # SonarCloud Scan
       - name: SonarCloud Scan
         env:
