@@ -71,15 +71,16 @@ jobs:
         env:
           new_version: ${{ env.new_version }}
 
-      # SonarQube Scan (Using SonarScanner CLI)
-      - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@v1
-        with:
-          sonar-token: ${{ secrets.SONAR_TOKEN }}
-          sonar-host-url: ${{ secrets.SONAR_HOST_URL }}
-          sonar-project-key: "express-typescript-docker"
-          sonar-project-name: "Express TypeScript Docker"
-          sonar-project-version: "${{ env.new_version }}"
+      # configure SonarQube Scan if necessary
+      - name: SonarCloud Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          npx sonar-scanner \
+            -Dsonar.organization=my-project-ironrim \
+            -Dsonar.projectKey=my-project-ironrim_sonarqube \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=https://sonarcloud.io
 
       # Push Docker Image to JFrog Artifactory
       - name: Push Docker Image to JFrog Artifactory
