@@ -119,22 +119,23 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Set up kubectl
+
+      # Set up kubectl for EKS
       - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
+        uses: aws-actions/configure-kubeconfig@v2
         with:
-          version: 'latest'
+          aws-region: ${{ secrets.AWS_REGION }}
+          cluster-name: ${{ secrets.CLUSTER_NAME }}
 
-      # Update kubeconfig for EKS
-      - name: Update kubeconfig
+      # Validate kubectl configuration
+      - name: Validate kubectl configuration
         run: |
-          aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.CLUSTER_NAME }}
+          kubectl get nodes
 
-      # Deploy to EKS
+      # Deploy to EKS using the deployment.yaml file
       - name: Deploy to EKS
         run: |
-          kubectl set image deployment/express-typescript-app \
-            express-typescript-app=satishrepo.jfrog.io/my-repo-docker/express-typescript-docker:${{ env.new_version }}
+          kubectl apply -f deployment.yaml --validate=false
 
 
       # # Notify Slack (Optional)
