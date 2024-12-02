@@ -69,10 +69,15 @@ jobs:
       - name: Setup JFrog CLI
         run: |
           curl -fL https://getcli.jfrog.io | sh
+          chmod +x jfrog
+          ./jfrog --version
+  
+      - name: Configure JFrog CLI
+        run: |
           ./jfrog config add jfrog-server \
-            --url ${{ secrets.JFROG_URL }} \
-            --user ${{ secrets.JFROG_USERNAME }} \
-            --password ${{ secrets.JFROG_PASSWORD }} \
+            --url=${{ secrets.JFROG_URL }} \
+            --user=${{ secrets.JFROG_USERNAME }} \
+            --password=${{ secrets.JFROG_PASSWORD }} \
             --enc-password=false \
             --interactive=false
 
