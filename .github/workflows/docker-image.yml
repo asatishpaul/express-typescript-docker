@@ -92,7 +92,7 @@ jobs:
             sonarsource/sonar-scanner-cli:latest \
             -Dsonar.organization=my-project-ironrim_sonarqube \
             -Dsonar.projectKey=my-project-ironrim \
-            -Dsonar.sources=/mnt/sonar /
+            -Dsonar.sources=/usr/src \
             -X
 
 
