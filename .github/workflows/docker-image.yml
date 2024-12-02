@@ -96,8 +96,8 @@ jobs:
             sonarsource/sonar-scanner-cli \
             -Dsonar.projectKey=my-project-ironrim_sonarqube \
             -Dsonar.sources=/mnt/sonar \
-            -Dsonar.docker.image=trialtab8o4.jfrog.io/my-repo-docker/express-typescript-docker:latest \
             -Dsonar.host.url=https://sonarcloud.io
+
 
 
 
