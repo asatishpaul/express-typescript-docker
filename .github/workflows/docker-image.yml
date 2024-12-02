@@ -66,20 +66,15 @@ jobs:
           path: dist/  # Assuming build outputs to the 'dist' folder
 
       # Set up JFrog CLI
-      - name: Setup JFrog CLI
-        run: |
-          curl -fL https://getcli.jfrog.io | sh
-          chmod +x jfrog
-          ./jfrog --version
-  
       - name: Configure JFrog CLI
         run: |
           ./jfrog config add jfrog-server \
-            --url=${{ secrets.JFROG_URL }} \
-            --user=${{ secrets.JFROG_USERNAME }} \
-            --password=${{ secrets.JFROG_PASSWORD }} \
+            --url="${{ secrets.JFROG_URL }}" \
+            --user="${{ secrets.JFROG_USERNAME }}" \
+            --password="${{ secrets.JFROG_PASSWORD }}" \
             --enc-password=false \
             --interactive=false
+
 
 
       # Docker login to JFrog Artifactory
