@@ -59,13 +59,12 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io
 
       # Upload Build Artifacts
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-artifacts
-          path: dist/  # Assuming build outputs to the 'dist' folder
+      - name: Install JFrog CLI
+        run: |
+          curl -fL https://getcli.jfrog.io | sh
+          chmod +x jfrog
+          ./jfrog --version
 
-      # Set up JFrog CLI
       - name: Configure JFrog CLI
         run: |
           ./jfrog config add jfrog-server \
@@ -74,7 +73,6 @@ jobs:
             --password="${{ secrets.JFROG_PASSWORD }}" \
             --enc-password=false \
             --interactive=false
-
 
 
       # Docker login to JFrog Artifactory
