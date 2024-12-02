@@ -73,7 +73,7 @@ jobs:
             -e SONAR_LOGIN=${{ secrets.SONAR_TOKEN }} \
             -v $GITHUB_WORKSPACE:/mnt/sonar \
             sonarsource/sonar-scanner-cli \
-            -Dsonar.projectKey=my-project-ironrim_sonarqube \
+            -Dsonar.projectKey=my-project-ironrim \
             -Dsonar.sources=./src \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
