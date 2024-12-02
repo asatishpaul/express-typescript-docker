@@ -74,8 +74,9 @@ jobs:
             -v $GITHUB_WORKSPACE:/mnt/sonar \
             sonarsource/sonar-scanner-cli \
             -Dsonar.projectKey=my-project-ironrim_sonarqube \
-            -Dsonar.sources=/mnt/sonar \
+            -Dsonar.sources=./src \
             -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
             -X
 
       # Push Docker image to JFrog Artifactory
