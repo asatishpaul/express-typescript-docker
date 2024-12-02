@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - '**'
- 
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -35,7 +35,7 @@ jobs:
         run: yarn lint && yarn test
         if: ${{ env.SKIP_CI != 'true' }}
 
-      # Build Project
+      # Build Project (Yarn)
       - name: Build Project
         run: yarn build
         if: ${{ env.SKIP_CI != 'true' }}
@@ -47,65 +47,39 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # configure SonarQube Scan if necessary
-      - name: SonarCloud Scan
+      # SonarCloud Scan for Yarn-built artifacts
+      - name: Run SonarScanner for Yarn build
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           npx sonar-scanner \
             -Dsonar.organization=my-project-ironrim \
             -Dsonar.projectKey=my-project-ironrim_sonarqube \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.sources=./src \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
-      # Upload Build Artifacts
-      - name: Install JFrog CLI
-        run: |
-          curl -fL https://getcli.jfrog.io | sh
-          chmod +x jfrog
-          ./jfrog --version
-
-      - name: Configure JFrog CLI
-        run: |
-          ./jfrog config add jfrog-server \
-            --url="${{ secrets.JFROG_URL }}" \
-            --user="${{ secrets.JFROG_USERNAME }}" \
-            --password="${{ secrets.JFROG_PASSWORD }}" \
-            --enc-password=false \
-            --interactive=false
-
-
-      # Docker login to JFrog Artifactory
-      - name: Docker login to JFrog Artifactory
-        run: |
-          echo ${{ secrets.JFROG_API_KEY }} | docker login trialtab8o4.jfrog.io --username ${{ secrets.JFROG_USERNAME }} --password-stdin
-      
       # Build Docker image
       - name: Build Docker Image
         run: docker build . --file Dockerfile --tag trialtab8o4.jfrog.io/my-repo-docker/express-typescript-docker:latest
 
-      # Scan the built Docker image with SonarQube
-      - name: Run SonarScanner
+      # SonarCloud Scan for Docker Image
+      - name: Run SonarScanner for Docker image
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           docker run --rm \
             -e SONAR_HOST_URL=https://sonarcloud.io \
             -e SONAR_LOGIN=${{ secrets.SONAR_TOKEN }} \
-            -v $(pwd):/mnt/sonar \
+            -v $GITHUB_WORKSPACE:/mnt/sonar \
             sonarsource/sonar-scanner-cli \
             -Dsonar.projectKey=my-project-ironrim_sonarqube \
             -Dsonar.sources=/mnt/sonar \
             -Dsonar.host.url=https://sonarcloud.io
 
-
-
-
-      
       # Push Docker image to JFrog Artifactory
       - name: Push Docker Image to JFrog Artifactory
         run: docker push trialtab8o4.jfrog.io/my-repo-docker/express-typescript-docker:latest
-
 
       # # Notify Slack (Optional)
       # - name: Notify Slack
