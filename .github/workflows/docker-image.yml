@@ -1,4 +1,4 @@
-name: CI Pipeline 
+name: CI Pipeline
 
 on:
   push:
@@ -7,21 +7,15 @@ on:
   pull_request:
     branches:
       - '**'
-
+ 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    permissions:
-      id-token: write
-      contents: read
-
     steps:
-      # Checkout Code
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
-      # Skip CI Check
+      # Skipping CI
       - name: Check for [skip ci]
         id: skip_check
         run: git log -1 --pretty=%s | grep -iqE '\[skip ci\]|\[ci skip\]'
@@ -31,7 +25,7 @@ jobs:
         run: echo "SKIP_CI=true" >> $GITHUB_ENV
         if: ${{ steps.skip_check.outcome == 'success' }}
 
-      # Install Dependencies
+      # Install dependencies (Yarn)
       - name: Install dependencies
         run: yarn install
         if: ${{ env.SKIP_CI != 'true' }}
@@ -46,73 +40,62 @@ jobs:
         run: yarn build
         if: ${{ env.SKIP_CI != 'true' }}
 
-      # Generate Version Tag
-      - name: Generate Version Tag
-        id: generate_version
-        run: |
-          last_version=$(git tag --sort=-v:refname | head -n 1 || echo "v0.0.0")
-          major=$(echo $last_version | cut -d'.' -f1 | tr -d 'v')
-          minor=$(echo $last_version | cut -d'.' -f2)
-          patch=$(echo $last_version | cut -d'.' -f3)
-          new_patch=$((patch + 1))
-          new_version="v$major.$minor.$new_patch"
-          echo "new_version=$new_version" >> $GITHUB_ENV
-          echo "New version generated: $new_version"
-
-      # Login to JFrog Docker Registry
-      - name: Login to JFrog Docker Registry
-        run: |
-          echo "${{ secrets.JFROG_PASSWORD }}" | docker login satishrepo.jfrog.io -u "${{ secrets.JFROG_USERNAME }}" --password-stdin
-
-      # Build Docker Image
-      - name: Build Docker Image
-        run: |
-          docker build . --file Dockerfile --tag satishrepo.jfrog.io/my-repo-docker/express-typescript-docker:${{ env.new_version }}
-        env:
-          new_version: ${{ env.new_version }}
-
-      # Install Java 17 for SonarQube Scanner Compatibility
+      # Setup Java 17 (if required for the environment)
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
-          distribution: 'adoptopenjdk'  # You can use other distributions like 'zulu', 'amazon-corretto', etc.
+          distribution: 'temurin'
 
-      # Checkout Code
-      - name: Checkout code
-        uses: actions/checkout@v3
-        
-      # SonarCloud Scan
+      # configure SonarQube Scan if necessary
       - name: SonarCloud Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          npx sonar-scanner -X \
+          npx sonar-scanner \
             -Dsonar.organization=my-project-ironrim \
             -Dsonar.projectKey=my-project-ironrim_sonarqube \
             -Dsonar.sources=. \
             -Dsonar.host.url=https://sonarcloud.io
 
-      # Push Docker Image to JFrog Artifactory
-      - name: Push Docker Image to JFrog Artifactory
-        run: |
-          docker push satishrepo.jfrog.io/my-repo-docker/express-typescript-docker:${{ env.new_version }}
-        env:
-          new_version: ${{ env.new_version }}
-
-      # Configure AWS Credentials
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v3
+      # Upload Build Artifacts
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v3
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          name: build-artifacts
+          path: dist/  # Assuming build outputs to the 'dist' folder
 
-      # Update kubeconfig for EKS (Manual Setup)
-      - name: Update kubeconfig
+      # Set up JFrog CLI
+      - name: Setup JFrog CLI
         run: |
-          aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.CLUSTER_NAME }}
+          curl -fL https://getcli.jfrog.io | sh
+          ./jfrog config add jfrog-server \
+            --url ${{ secrets.JFROG_URL }} \
+            --user ${{ secrets.JFROG_USERNAME }} \
+            --password ${{ secrets.JFROG_PASSWORD }} \
+            --enc-password=false \
+            --interactive=false
 
-      # Deploy to EKS using the deployment.yaml file
-      - name: Deploy to EKS
+
+      # Docker login to JFrog Artifactory
+      - name: Docker login to JFrog Artifactory
         run: |
-          kubectl apply -f deployment.yaml
+          echo ${{ secrets.JFROG_API_KEY }} | docker login satishrepo.jfrog.io --username ${{ secrets.JFROG_USERNAME }} --password-stdin
+      
+      # Build Docker image
+      - name: Build Docker Image
+        run: docker build . --file Dockerfile --tag satishrepo.jfrog.io/my-repo-docker/express-typescript-docker:latest
+      
+      # Push Docker image to JFrog Artifactory
+      - name: Push Docker Image to JFrog Artifactory
+        run: docker push satishrepo.jfrog.io/my-repo-docker/express-typescript-docker:latest
+
+
+      # # Notify Slack (Optional)
+      # - name: Notify Slack
+      #   uses: rtCamp/action-slack-notify@v2
+      #   with:
+      #     webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #     message: "Deployment of ${{ github.sha }} to production succeeded"
+      #     color: good
+      #   if: success()
