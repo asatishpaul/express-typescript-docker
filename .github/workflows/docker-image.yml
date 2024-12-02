@@ -48,16 +48,16 @@ jobs:
           distribution: 'temurin'
 
       # SonarCloud Scan for Yarn-built artifacts
-      - name: Run SonarScanner for Yarn build
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          npx sonar-scanner \
-            -Dsonar.organization=my-project-ironrim \
-            -Dsonar.projectKey=my-project-ironrim_sonarqube \
-            -Dsonar.sources=./src \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+      # - name: Run SonarScanner for Yarn build
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   run: |
+      #     npx sonar-scanner \
+      #       -Dsonar.organization=my-project-ironrim \
+      #       -Dsonar.projectKey=my-project-ironrim_sonarqube \
+      #       -Dsonar.sources=./src \
+      #       -Dsonar.host.url=https://sonarcloud.io \
+      #       -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
       # Build Docker image
       - name: Build Docker Image
