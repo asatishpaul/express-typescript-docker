@@ -85,7 +85,7 @@ jobs:
         run: docker build . --file Dockerfile --tag trialtab8o4.jfrog.io/my-repo-docker/express-typescript-docker:latest
 
       # Scan the built Docker image with SonarQube
-      - name: SonarQube Docker Image Scan
+      - name: Run SonarScanner
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
@@ -97,8 +97,8 @@ jobs:
             -Dsonar.projectKey=my-project-ironrim_sonarqube \
             -Dsonar.sources=/mnt/sonar \
             -Dsonar.docker.image=trialtab8o4.jfrog.io/my-repo-docker/express-typescript-docker:latest \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -X
+            -Dsonar.host.url=https://sonarcloud.io
+
 
 
       
