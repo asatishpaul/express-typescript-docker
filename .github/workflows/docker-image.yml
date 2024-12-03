@@ -69,6 +69,13 @@ jobs:
       - name: Build Docker Image
         run: docker build . --file Dockerfile --tag trialtab8o4.jfrog.io/my-repo-docker/express-typescript-docker:latest
 
+      # Extract Source Code from Docker Image (Optional)
+      - name: Extract Source Code from Docker Image
+        run: |
+          container_id=$(docker create express-typescript-docker:latest)
+          docker cp $container_id:/usr/src ./extracted_src
+          docker rm -v $container_id
+
       # SonarCloud Scan for Docker Image
       - name: Run SonarScanner for Docker image
         env:
