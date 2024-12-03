@@ -84,8 +84,6 @@ jobs:
             -Dsonar.sources=/usr/src \
             -X
 
-
-
       # Push Docker image to JFrog Artifactory
       - name: Push Docker Image to JFrog Artifactory
         run: docker push trialtab8o4.jfrog.io/my-repo-docker/express-typescript-docker:latest
