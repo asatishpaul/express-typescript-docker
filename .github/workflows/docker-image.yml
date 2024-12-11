@@ -73,12 +73,12 @@ jobs:
       - name: List Docker Images
         run: docker images
       
-      # Extract Source Code from Docker Image
-      - name: Extract Source Code from Docker Image
-        run: |
-          container_id=$(docker create express-typescript-docker:latest)
-          docker cp $container_id:/usr/src ./extracted_src
-          docker rm -v $container_id
+      # # Extract Source Code from Docker Image
+      # - name: Extract Source Code from Docker Image
+      #   run: |
+      #     container_id=$(docker create express-typescript-docker:latest)
+      #     docker cp $container_id:/usr/src ./extracted_src
+      #     docker rm -v $container_id
 
       # SonarCloud Scan for Docker Image
       - name: Run SonarScanner for Docker image
