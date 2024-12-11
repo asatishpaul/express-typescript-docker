@@ -3,44 +3,35 @@ kind: Deployment
 metadata:
   name: express-typescript-app
   labels:
-    app: express-typescript-app
+    app: express-typescript
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: express-typescript-app
+      app: express-typescript
   template:
     metadata:
       labels:
-        app: express-typescript-app
+        app: express-typescript
     spec:
       containers:
-        - name: express-typescript-app
-          image: satishrepo.jfrog.io/my-repo-docker/express-typescript-docker:v1.0.0 # Replace with the version you want to deploy
-          ports:
-            - containerPort: 3000
-          env:
-            - name: NODE_ENV
-              value: "production"
-          resources:
-            limits:
-              memory: "256Mi"
-              cpu: "500m"
-            requests:
-              memory: "128Mi"
-              cpu: "250m"
+      - name: express-typescript
+        image: trialtab8o4.jfrog.io/my-repo-docker/express-typescript-docker:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: express-typescript-service
-  labels:
-    app: express-typescript-app
 spec:
   type: LoadBalancer
   selector:
-    app: express-typescript-app
+    app: express-typescript
   ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 3000
+  - protocol: TCP
+    port: 80
+    targetPort: 3000
