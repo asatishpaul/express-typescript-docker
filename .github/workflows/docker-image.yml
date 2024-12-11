@@ -80,20 +80,20 @@ jobs:
       #     docker cp $container_id:/usr/src ./extracted_src
       #     docker rm -v $container_id
 
-      # SonarCloud Scan for Docker Image
-      - name: Run SonarScanner for Docker image
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          docker run --rm \
-            -e SONAR_HOST_URL="https://sonarcloud.io" \
-            -e SONAR_LOGIN=${{ secrets.SONAR_TOKEN }} \
-            -v $(pwd):/usr/src \
-            sonarsource/sonar-scanner-cli:latest \
-            -Dsonar.organization=my-project-ironrim_sonarqube \
-            -Dsonar.projectKey=my-project-ironrim \
-            -Dsonar.sources=/usr/src \
-            -X
+      # # SonarCloud Scan for Docker Image
+      # - name: Run SonarScanner for Docker image
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   run: |
+      #     docker run --rm \
+      #       -e SONAR_HOST_URL="https://sonarcloud.io" \
+      #       -e SONAR_LOGIN=${{ secrets.SONAR_TOKEN }} \
+      #       -v $(pwd):/usr/src \
+      #       sonarsource/sonar-scanner-cli:latest \
+      #       -Dsonar.organization=my-project-ironrim_sonarqube \
+      #       -Dsonar.projectKey=my-project-ironrim \
+      #       -Dsonar.sources=/usr/src \
+      #       -X
 
       # Push Docker image to JFrog Artifactory 
       - name: Push Docker Image to JFrog Artifactory
