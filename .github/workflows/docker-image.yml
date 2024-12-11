@@ -99,6 +99,27 @@ jobs:
       - name: Push Docker Image to JFrog Artifactory
         run: docker push trialtab8o4.jfrog.io/my-repo-docker/express-typescript-docker:latest
 
+      # Configure kubectl
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      # Authenticate with AWS EKS
+      - name: Configure AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Update kubeconfig for EKS
+        run: aws eks update-kubeconfig --region ap-south-1 --name my-eks
+
+      # Deploy to EKS
+      - name: Deploy to EKS
+        run: kubectl apply -f deployment.yaml
+        
       # # Notify Slack (Optional)
       # - name: Notify Slack
       #   uses: rtCamp/action-slack-notify@v2
