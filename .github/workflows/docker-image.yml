@@ -95,9 +95,14 @@ jobs:
       #       -Dsonar.sources=/usr/src \
       #       -X
 
-      # Push Docker image to JFrog Artifactory 
+      # Log in to JFrog Artifactory
+      - name: Authenticate Docker with JFrog
+        run: echo "${{ secrets.JFROG_PASSWORD }}" | docker login trialtab8o4.jfrog.io -u "${{ secrets.JFROG_USERNAME }}" --password-stdin
+
+      # Push Docker image to JFrog Artifactory
       - name: Push Docker Image to JFrog Artifactory
         run: docker push trialtab8o4.jfrog.io/my-repo-docker/express-typescript-docker:latest
+
 
       # Configure kubectl
       - name: Set up kubectl
