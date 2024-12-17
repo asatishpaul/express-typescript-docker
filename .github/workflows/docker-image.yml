@@ -71,12 +71,12 @@ jobs:
       
       # Build Docker Image
       - name: Build Docker Image
-        run: docker build . --file Dockerfile --tag trial1tq967.jfrog.io/my-docker-repo/express-typescript-docker:latest
+        run: docker build . --file Dockerfile --tag trial1tq967.jfrog.io/docker-trail/express-typescript-docker:latest
 
       
       # Push Docker Image to JFrog Artifactory
       - name: Push Docker Image to JFrog Artifactory
-        run: docker push trial1tq967.jfrog.io/my-docker-repo/express-typescript-docker:latest
+        run: docker push trial1tq967.jfrog.io/docker-trail/express-typescript-docker:latest
 
 
 
