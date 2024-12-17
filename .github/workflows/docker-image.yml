@@ -67,7 +67,7 @@ jobs:
 
       # Build Docker image
       - name: Build Docker Image
-        run: docker build . --file Dockerfile --tag trial1tq967.jfrog.io/artifactory/artifactory-build-info/express-typescript-docker:latest
+        run: docker build . --file Dockerfile --tag trial1tq967.jfrog.io/artifactory/my-docker-repo/express-typescript-docker:latest
 
       # Ensure the image is available
       - name: List Docker Images
@@ -101,7 +101,7 @@ jobs:
 
       # Push Docker image to JFrog Artifactory
       - name: Push Docker Image to JFrog Artifactory
-        run: docker push trial1tq967.jfrog.io/artifactory/artifactory-build-info/express-typescript-docker:latest
+        run: docker push trial1tq967.jfrog.io/artifactory/my-docker-repo/express-typescript-docker:latest
 
       # Configure kubectl
       - name: Set up kubectl
