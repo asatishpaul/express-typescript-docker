@@ -77,12 +77,6 @@ jobs:
       # Push Docker Image to JFrog Artifactory
       - name: Push Docker Image to JFrog Artifactory
         run: docker push trial1tq967.jfrog.io/my-docker-repo1-docker/express-typescript-docker:latest
-      
-      Set up kubectl
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'latest'
 
       # Configure AWS CLI
       - name: Configure AWS CLI
