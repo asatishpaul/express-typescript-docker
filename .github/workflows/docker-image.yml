@@ -78,7 +78,32 @@ jobs:
       - name: Push Docker Image to JFrog Artifactory
         run: docker push trial1tq967.jfrog.io/my-docker-repo1-docker/express-typescript-docker:latest
 
+      # Create Kubernetes secret for JFrog Docker registry
+      - name: Create Kubernetes secret for Docker registry
+        run: |
+          kubectl create secret docker-registry jfrog-docker-secret \
+            --docker-server=trial1tq967.jfrog.io \
+            --docker-username=${{ secrets.JFROG_USERNAME }} \
+            --docker-password=${{ secrets.JFROG_PASSWORD }} \
+            --docker-email=${{ secrets.USER_EMAIL }}
+      
+      # Configure kubectl
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
 
+      # Authenticate with AWS EKS
+      - name: Configure AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+
+      - name: Update kubeconfig for EKS
+        run: aws eks update-kubeconfig --region ap-south-1 --name my-eks2
+      
 
       # Configure kubectl
       - name: Set up kubectl
