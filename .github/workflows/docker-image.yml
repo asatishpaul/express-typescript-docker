@@ -67,7 +67,7 @@ jobs:
 
       # Build Docker image
       - name: Build Docker Image
-        run: docker build . --file Dockerfile --tag trialtab8o4.jfrog.io/my-repo-docker/express-typescript-docker:latest
+        run: docker build . --file Dockerfile --tag https://trial1tq967.jfrog.io/artifactory/artifactory-build-info/express-typescript-docker:latest
 
       # Ensure the image is available
       - name: List Docker Images
@@ -97,11 +97,11 @@ jobs:
 
       # Log in to JFrog Artifactory
       - name: Authenticate Docker with JFrog
-        run: echo "${{ secrets.JFROG_PASSWORD }}" | docker login trialtab8o4.jfrog.io -u "${{ secrets.JFROG_USERNAME }}" --password-stdin
+        run: echo "${{ secrets.JFROG_PASSWORD }}" | docker login trial1tq967.jfrog.io -u "${{ secrets.JFROG_USERNAME }}" --password-stdin
 
       # Push Docker image to JFrog Artifactory
       - name: Push Docker Image to JFrog Artifactory
-        run: docker push trialtab8o4.jfrog.io/my-repo-docker/express-typescript-docker:latest
+        run: docker push https://trial1tq967.jfrog.io/artifactory/artifactory-build-info/express-typescript-docker:latest
 
 
       # Configure kubectl
