@@ -95,13 +95,13 @@ jobs:
       #       -Dsonar.sources=/usr/src \
       #       -X
 
-      # # Log in to JFrog Artifactory
-      # - name: Authenticate Docker with JFrog
-      #   run: echo "${{ secrets.JFROG_PASSWORD }}" | docker login trial1tq967.jfrog.io -u "${{ secrets.JFROG_USERNAME }}" --password-stdin
+      # Log in to JFrog Artifactory
+      - name: Authenticate Docker with JFrog
+        run: echo "${{ secrets.JFROG_PASSWORD }}" | docker login trial1tq967.jfrog.io -u "${{ secrets.JFROG_USERNAME }}" --password-stdin
 
-      # # Push Docker image to JFrog Artifactory
-      # - name: Push Docker Image to JFrog Artifactory
-      #   run: docker push https://trial1tq967.jfrog.io/artifactory/artifactory-build-info/express-typescript-docker:latest
+      # Push Docker image to JFrog Artifactory
+      - name: Push Docker Image to JFrog Artifactory
+        run: docker push https://trial1tq967.jfrog.io/artifactory/artifactory-build-info/express-typescript-docker:latest
 
 
       # Configure kubectl
