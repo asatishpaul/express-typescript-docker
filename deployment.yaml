@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: express-typescript
-        image: trialtab8o4.jfrog.io/my-repo-docker/express-typescript-docker:latest
+        image: trial1tq967.jfrog.io/artifactory/my-docker-repo/express-typescript-docker:latest
         ports:
         - containerPort: 3000
         env:
