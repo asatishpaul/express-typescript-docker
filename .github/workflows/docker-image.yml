@@ -78,7 +78,7 @@ jobs:
       - name: Push Docker Image to JFrog Artifactory
         run: docker push trial1tq967.jfrog.io/my-docker-repo1-docker/express-typescript-docker:latest
       
-      # Set up kubectl
+      Set up kubectl
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
@@ -95,14 +95,14 @@ jobs:
       - name: Update kubeconfig for EKS
         run: aws eks update-kubeconfig --region ap-south-1 --name my-eks2
 
-      # Create Kubernetes secret for Docker registry
-      - name: Create Kubernetes secret for Docker registry
-        run: |
-          kubectl create secret docker-registry jfrog-docker-secret \
-            --docker-server=trial1tq967.jfrog.io \
-            --docker-username=${{ secrets.JFROG_USERNAME }} \
-            --docker-password=${{ secrets.JFROG_PASSWORD }} \
-            --docker-email=${{ secrets.USER_EMAIL }}
+      # # Create Kubernetes secret for Docker registry
+      # - name: Create Kubernetes secret for Docker registry
+      #   run: |
+      #     kubectl create secret docker-registry jfrog-docker-secret \
+      #       --docker-server=trial1tq967.jfrog.io \
+      #       --docker-username=${{ secrets.JFROG_USERNAME }} \
+      #       --docker-password=${{ secrets.JFROG_PASSWORD }} \
+      #       --docker-email=${{ secrets.USER_EMAIL }}
 
       # Deploy to EKS
       - name: Deploy to EKS
