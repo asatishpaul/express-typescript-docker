@@ -1,18 +1,3 @@
-# SecretProviderClass for CSI Driver
-apiVersion: secrets-store.csi.x-k8s.io/v1
-kind: SecretProviderClass
-metadata:
-  name: jfrog-secrets
-  namespace: default
-spec:
-  provider: aws
-  parameters:
-    objects: |
-      - objectName: "jfrog-credentials"
-        objectType: "secretsmanager"
-
----
-# Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -29,6 +14,7 @@ spec:
       labels:
         app: express-typescript
     spec:
+      serviceAccountName: secrets-store-csi-driver
       containers:
       - name: express-typescript
         image: trial1tq967.jfrog.io/my-docker-repo1-docker/express-typescript-docker:latest
@@ -39,19 +25,16 @@ spec:
           value: "production"
         volumeMounts:
         - name: secrets-store
-          mountPath: /mnt/secrets-store
+          mountPath: "/mnt/secrets-store"
           readOnly: true
-      imagePullSecrets:
-        - name: jfrog-docker-secret
       volumes:
       - name: secrets-store
         csi:
           driver: secrets-store.csi.k8s.io
           readOnly: true
           volumeAttributes:
-            secretProviderClass: jfrog-secrets
+            secretProviderClass: "aws-secrets"
 ---
-# Service
 apiVersion: v1
 kind: Service
 metadata:
