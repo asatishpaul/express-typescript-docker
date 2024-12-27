@@ -21,6 +21,8 @@ spec:
         image: trial1tq967.jfrog.io/my-docker-repo1-docker/express-typescript-docker:latest
         ports:
         - containerPort: 3000
+      imagePullSecrets:
+      - name: jfrog-registry-secret
         env:
         - name: NODE_ENV
           value: "production"
