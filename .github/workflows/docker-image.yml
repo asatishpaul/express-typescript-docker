@@ -1,4 +1,4 @@
-name: CI Pipeline 
+name: CI/CD Pipeline 
 
 on:
   push:
@@ -9,104 +9,67 @@ on:
       - '**'
 
 jobs:
-  build:
+  build-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+    # Step 1: Checkout Code
+    - name: Checkout Code
+      uses: actions/checkout@v2
 
-      # Skipping CI
-      - name: Check for [skip ci]
-        id: skip_check
-        run: git log -1 --pretty=%s | grep -iqE '\[skip ci\]|\[ci skip\]'
-        continue-on-error: true
+    # Step 2: Check for [skip ci]
+    - name: Check for [skip ci]
+      id: skip_check
+      run: git log -1 --pretty=%s | grep -iqE '\[skip ci\]|\[ci skip\]'
+      continue-on-error: true
 
-      - name: Set skip flag
-        run: echo "SKIP_CI=true" >> $GITHUB_ENV
-        if: ${{ steps.skip_check.outcome == 'success' }}
+    - name: Set Skip Flag
+      run: echo "SKIP_CI=true" >> $GITHUB_ENV
+      if: ${{ steps.skip_check.outcome == 'success' }}
 
-      # Install dependencies (Yarn)
-      - name: Install dependencies
-        run: yarn install
-        if: ${{ env.SKIP_CI != 'true' }}
+    # Step 3: Install Dependencies
+    - name: Install dependencies
+      run: yarn install
+      if: ${{ env.SKIP_CI != 'true' }}
 
-      # Lint and Test
-      - name: Lint and Test
-        run: yarn lint && yarn test
-        if: ${{ env.SKIP_CI != 'true' }}
+    # Step 4: Lint and Test Code
+    - name: Lint and Test
+      run: yarn lint && yarn test
+      if: ${{ env.SKIP_CI != 'true' }}
 
-      # Build Project (Yarn)
-      - name: Build Project
-        run: yarn build
-        if: ${{ env.SKIP_CI != 'true' }}
+    # Step 5: Build Project
+    - name: Build Project
+      run: yarn build
+      if: ${{ env.SKIP_CI != 'true' }}
 
-      # Setup Java 17 (if required for the environment)
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-      # SonarCloud Authentication Debug
-      - name: Debug SonarCloud Authentication
-        run: |
-          echo "SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}"
-          curl -u ${{ secrets.SONAR_TOKEN }} https://sonarcloud.io/api/system/health
+    # Step 6: Build Docker Image
+    - name: Build Docker Image
+      run: docker build . --file Dockerfile --tag trial1tq967.jfrog.io/my-docker-repo1-docker/express-typescript-docker:latest
 
+    # Step 7: Push Docker Image to JFrog Artifactory
+    - name: Push Docker Image
+      run: docker push trial1tq967.jfrog.io/my-docker-repo1-docker/express-typescript-docker:latest
 
-      # SonarCloud Scan for Yarn-built artifacts
-      - name: Run SonarScanner for Yarn build
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          npx sonar-scanner \
-            -Dsonar.organization=my-project-ironrim \
-            -Dsonar.projectKey=my-project-ironrim_sonarqube \
-            -Dsonar.sources=./src \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+    # Step 8: Configure AWS CLI
+    - name: Configure AWS CLI
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-south-1
 
-      # Authenticate Docker with JFrog
-      - name: Authenticate Docker with JFrog
-        run: echo "${{ secrets.JFROG_PASSWORD }}" | docker login trial1tq967.jfrog.io -u "${{ secrets.JFROG_USERNAME }}" --password-stdin
-      
-      # Build Docker Image
-      - name: Build Docker Image
-        run: docker build . --file Dockerfile --tag trial1tq967.jfrog.io/my-docker-repo1-docker/express-typescript-docker:latest
+    # Step 9: Update kubeconfig for EKS
+    - name: Update kubeconfig for EKS
+      run: aws eks update-kubeconfig --region ap-south-1 --name my-eks2
 
-      
-      # Push Docker Image to JFrog Artifactory
-      - name: Push Docker Image to JFrog Artifactory
-        run: docker push trial1tq967.jfrog.io/my-docker-repo1-docker/express-typescript-docker:latest
+    # Step 10: Deploy SecretProviderClass
+    - name: Deploy SecretProviderClass
+      run: kubectl apply -f secret-provider-class.yaml
 
-      # Configure AWS CLI
-      - name: Configure AWS CLI
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1
+    # Step 11: Deploy Kubernetes Resources
+    - name: Deploy to EKS
+      run: kubectl apply -f deployment.yaml
 
-      - name: Update kubeconfig for EKS
-        run: aws eks update-kubeconfig --region ap-south-1 --name my-eks2
-
-      # # Create Kubernetes secret for Docker registry
-      # - name: Create Kubernetes secret for Docker registry
-      #   run: |
-      #     kubectl create secret docker-registry jfrog-docker-secret \
-      #       --docker-server=trial1tq967.jfrog.io \
-      #       --docker-username=${{ secrets.JFROG_USERNAME }} \
-      #       --docker-password=${{ secrets.JFROG_PASSWORD }} \
-      #       --docker-email=${{ secrets.USER_EMAIL }}
-
-      # Deploy to EKS
-      - name: Deploy to EKS
-        run: kubectl apply -f deployment.yaml
-        
-      # # Notify Slack (Optional)
-      # - name: Notify Slack
-      #   uses: rtCamp/action-slack-notify@v2
-      #   with:
-      #     webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-      #     message: "Deployment of ${{ github.sha }} to production succeeded"
-      #     color: good
-      #   if: success()
+    # Step 12: Verify Deployment
+    - name: Verify Pod Status
+      run: kubectl get pods
