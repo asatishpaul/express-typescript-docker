@@ -44,7 +44,7 @@ jobs:
 
     # Docker login to JFrog Artifactory
     - name: Docker login to JFrog Artifactory
-        run: |
+      run: |
           echo ${{ secrets.JFROG_API_KEY }} | docker login trial1tq967.jfrog.io --username ${{ secrets.JFROG_USERNAME }} --password-stdin
 
     # Step 6: Build Docker Image
