@@ -21,8 +21,6 @@ spec:
         image: trial1tq967.jfrog.io/my-docker-repo1-docker/express-typescript-docker:latest
         ports:
         - containerPort: 3000
-      imagePullSecrets:
-      - name: jfrog-registry-secret
         env:
         - name: NODE_ENV
           value: "production"
@@ -30,6 +28,8 @@ spec:
         - name: secrets-store
           mountPath: "/mnt/secrets-store"
           readOnly: true
+      imagePullSecrets:
+      - name: jfrog-registry-secret
       volumes:
       - name: secrets-store
         csi:
@@ -37,6 +37,7 @@ spec:
           readOnly: true
           volumeAttributes:
             secretProviderClass: "aws-secrets"
+
 ---
 apiVersion: v1
 kind: Service
