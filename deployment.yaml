@@ -14,7 +14,7 @@ spec:
       labels:
         app: express-typescript
     spec:
-      serviceAccountName: secrets-store-csi-driver
+      serviceAccountName: secrets-store-csi-driver  # Ensure this is the correct service account
       containers:
       - name: express-typescript
         image: trial1tq967.jfrog.io/my-docker-repo1-docker/express-typescript-docker:latest
