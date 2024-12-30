@@ -42,7 +42,7 @@ RUN npm run build
 
 # Set environment variables to enable AWS SDK to access Secrets Manager
 # The app will fetch the secrets dynamically at runtime
-ENV AWS_REGION=us-east-1
+ENV AWS_REGION=ap-south-1
 ENV SECRET_NAME=my-docker-secrets
 
 # The entry point for the application (it will retrieve secrets from AWS Secrets Manager)
