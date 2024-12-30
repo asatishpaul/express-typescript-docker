@@ -1,0 +1,80 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout Code
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    # Step 2: Check for [skip ci]
+    - name: Check for [skip ci]
+      id: skip_check
+      run: git log -1 --pretty=%s | grep -iqE '\[skip ci\]|\[ci skip\]'
+      continue-on-error: true
+
+    - name: Set Skip Flag
+      run: echo "SKIP_CI=true" >> $GITHUB_ENV
+      if: ${{ steps.skip_check.outcome == 'success' }}
+
+    # Step 3: Install Dependencies
+    - name: Install dependencies
+      run: yarn install
+      if: ${{ env.SKIP_CI != 'true' }}
+
+    # Step 4: Lint and Test Code
+    - name: Lint and Test
+      run: yarn lint && yarn test
+      if: ${{ env.SKIP_CI != 'true' }}
+
+    # Step 5: Build Project
+    - name: Build Project
+      run: yarn build
+      if: ${{ env.SKIP_CI != 'true' }}
+
+    # Docker login to JFrog Artifactory
+    - name: Docker login to JFrog Artifactory
+      run: |
+          echo ${{ secrets.JFROG_API_KEY }} | docker login trial1tq967.jfrog.io --username ${{ secrets.JFROG_USERNAME }} --password-stdin
+
+    # Step 6: Build Docker Image
+    - name: Build Docker Image
+      run: docker build . --file Dockerfile --tag trial1tq967.jfrog.io/my-docker-repo1-docker/express-typescript-docker:latest
+
+    # Step 7: Push Docker Image to JFrog Artifactory
+    - name: Push Docker Image
+      run: docker push trial1tq967.jfrog.io/my-docker-repo1-docker/express-typescript-docker:latest
+
+    # Step 8: Configure AWS CLI
+    - name: Configure AWS CLI
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-south-1
+
+    # Step 9: Update kubeconfig for EKS
+    - name: Update kubeconfig for EKS
+      run: aws eks update-kubeconfig --region ap-south-1 --name my-eks2
+
+    # Step 10: Deploy SecretProviderClass
+    - name: Deploy SecretProviderClass
+      run: kubectl apply -f secret-provider-class.yaml
+
+    # Step 11: Deploy Kubernetes Resources
+    - name: Deploy to EKS
+      run: kubectl apply -f deployment.yaml
+
+    # Step 12: Verify Deployment
+    - name: Verify Pod Status
+      run: kubectl get pods
