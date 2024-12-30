@@ -48,3 +48,4 @@ ENV SECRET_NAME=my-docker-secret
 # The entry point for the application (it will retrieve secrets from AWS Secrets Manager)
 CMD [ "node", "dist/index.js" ]
 
+
